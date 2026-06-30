@@ -9,6 +9,7 @@ from typing import Any
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+from automation_platform.bots.xauusd_bot.economic_calendar import CALENDAR_PROVIDER_LABEL
 from automation_platform.bots.xauusd_bot.market_data import DATA_SOURCE_LABEL
 from automation_platform.shared.config import PlatformConfig
 
@@ -46,6 +47,7 @@ def build_health_message(context: Any, platform_config: PlatformConfig) -> str:
             "",
             "XAUUSD:",
             f"Data Source: {DATA_SOURCE_LABEL}",
+            f"Calendar Source: {_calendar_source_status(platform_config)}",
             f"Scanner: {_job_registered(scheduler, 'silent_market_scan')}",
             "",
             "Next Scheduled Jobs:",
@@ -110,6 +112,12 @@ def _job_registered(scheduler: AsyncIOScheduler | None, job_id: str) -> str:
     if scheduler is None:
         return "Unavailable"
     return "Registered" if scheduler.get_job(job_id) else "Not registered"
+
+
+def _calendar_source_status(platform_config: PlatformConfig) -> str:
+    if platform_config.xauusd.economic_calendar_api_key:
+        return f"{CALENDAR_PROVIDER_LABEL} configured"
+    return f"{CALENDAR_PROVIDER_LABEL} not configured"
 
 
 def _scheduled_jobs(scheduler: AsyncIOScheduler | None) -> str:

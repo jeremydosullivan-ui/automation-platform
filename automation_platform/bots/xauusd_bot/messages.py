@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 
+from automation_platform.bots.xauusd_bot.economic_calendar import format_events_for_message, get_todays_xauusd_events
 from automation_platform.bots.xauusd_bot.indicators import analyze_market
 from automation_platform.bots.xauusd_bot.market_data import DATA_SOURCE_LABEL, MarketData, fetch_market_data
 from automation_platform.shared.config import PlatformConfig
@@ -42,6 +43,7 @@ def build_gold_message(platform_config: PlatformConfig) -> str:
         return _data_unavailable_message("🥇 XAUUSD Market Snapshot")
 
     data, analysis = context
+    events_text = market_events_text(platform_config)
     return (
         "🥇 XAUUSD Market Snapshot\n\n"
         "Price:\n"
@@ -67,6 +69,8 @@ def build_gold_message(platform_config: PlatformConfig) -> str:
         f"EMA200 1H: {_price_number(analysis.one_hour.ema200)}\n\n"
         "Market Conditions:\n"
         f"{analysis.market_condition}\n\n"
+        "Today's Market Events:\n"
+        f"{events_text}\n\n"
         "Reminder:\n"
         "Wait for confirmation. No chasing. Protect capital first."
     )
@@ -105,6 +109,7 @@ def build_newyork_message(platform_config: PlatformConfig) -> str:
         return _data_unavailable_message("🇺🇸 New York Session Watch")
 
     data, analysis = context
+    events_text = market_events_text(platform_config)
     return (
         "🇺🇸 New York Session Watch\n\n"
         f"XAUUSD: {_money(data.current_price)}\n\n"
@@ -116,7 +121,7 @@ def build_newyork_message(platform_config: PlatformConfig) -> str:
         f"RSI(14) 1H: {_number(analysis.one_hour.rsi14, 1)}\n"
         f"ATR(14) 1H: {_number(analysis.one_hour.atr14, 1)}\n\n"
         "Today's US Events:\n"
-        f"{market_events_text(platform_config)}\n\n"
+        f"{events_text}\n\n"
         "Session Note:\n"
         "New York open and US data releases can cause sharp moves in gold.\n\n"
         "Reminder:\n"
@@ -125,14 +130,12 @@ def build_newyork_message(platform_config: PlatformConfig) -> str:
 
 
 def market_events_text(platform_config: PlatformConfig) -> str:
-    """Return event text, with a safe placeholder until an API key is added."""
+    """Return today's XAUUSD-relevant event text."""
 
-    if not platform_config.xauusd.economic_calendar_api_key and not platform_config.xauusd.news_api_key:
-        return "Market events unavailable."
-
-    # Version 1 keeps the integration point explicit without depending on a
-    # fragile scraper. A keyed provider can be added here later.
-    return "Market events unavailable."
+    result = get_todays_xauusd_events(platform_config)
+    if not result.available:
+        logger.warning("Economic calendar fallback used in message.")
+    return format_events_for_message(result)
 
 
 def _load_context() -> tuple[MarketData, MarketAnalysis] | None:
