@@ -1,0 +1,2 @@
+"""Personal automation platform package."""
+

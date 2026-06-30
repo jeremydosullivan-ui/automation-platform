@@ -1,0 +1,2 @@
+"""Morning briefing bot module."""
+
