@@ -35,12 +35,10 @@ def build_health_message(context: Any, platform_config: PlatformConfig) -> str:
             f"Environment: {_environment_label()}",
             "",
             "Bots:",
-            _bot_status("Morning Bot", platform_config.morning_bot.enabled, placeholder=False),
-            _bot_status("XAUUSD Bot", platform_config.xauusd_bot.enabled, placeholder=True),
+            *_bot_lines(platform_config),
             "",
             "Telegram:",
-            _polling_status("Morning Bot", runtime_state.get("morning_polling")),
-            _polling_status("XAUUSD Bot", runtime_state.get("xauusd_polling")),
+            *_polling_lines(platform_config, runtime_state),
             "",
             "Scheduler:",
             _scheduler_status(scheduler),
@@ -63,6 +61,30 @@ def _bot_status(name: str, enabled: bool, *, placeholder: bool) -> str:
     if placeholder:
         return f"✅ {name}: Enabled / Placeholder"
     return f"✅ {name}: Enabled"
+
+
+def _bot_lines(platform_config: PlatformConfig) -> list[str]:
+    if platform_config.assistant_mode_enabled:
+        return [
+            _bot_status("Jeremy Assistant", platform_config.assistant_bot.enabled, placeholder=False),
+            "✅ Morning Module: Enabled",
+            "✅ XAUUSD Module: Placeholder",
+        ]
+
+    return [
+        _bot_status("Morning Bot", platform_config.morning_bot.enabled, placeholder=False),
+        _bot_status("XAUUSD Bot", platform_config.xauusd_bot.enabled, placeholder=True),
+    ]
+
+
+def _polling_lines(platform_config: PlatformConfig, runtime_state: dict[str, bool]) -> list[str]:
+    if platform_config.assistant_mode_enabled:
+        return [_polling_status("Jeremy Assistant", runtime_state.get("assistant_polling"))]
+
+    return [
+        _polling_status("Morning Bot", runtime_state.get("morning_polling")),
+        _polling_status("XAUUSD Bot", runtime_state.get("xauusd_polling")),
+    ]
 
 
 def _polling_status(name: str, active: bool | None) -> str:
@@ -96,6 +118,7 @@ def _scheduled_jobs(scheduler: AsyncIOScheduler | None) -> str:
 
 def _job_label(job_id: str) -> str:
     labels = {
+        "assistant_daily_morning_briefing": "07:30 — Morning Briefing",
         "morning_bot_daily_briefing": "07:30 — Morning Briefing",
         "london_session_watch": "14:00 — London Watch",
         "newyork_session_watch": "20:30 — New York Watch",
@@ -134,4 +157,3 @@ def _git_commit() -> str | None:
         return None
 
     return result.stdout.strip() or None
-

@@ -4,9 +4,45 @@ This project is now structured as a scalable Railway-ready automation platform.
 
 The goal is to run one Railway service that can eventually host multiple Telegram bots and personal automations from the same codebase.
 
-## Current Bots
+## Current Bot Interface
+
+### Jeremy Assistant
+
+Jeremy Assistant is the preferred single-bot interface.
+
+Enabled when these environment variables are present:
+
+```text
+ASSISTANT_BOT_TOKEN=
+ASSISTANT_CHAT_ID=
+```
+
+When `ASSISTANT_BOT_TOKEN` and `ASSISTANT_CHAT_ID` are set, the platform starts only Jeremy Assistant and does not start the legacy separate Morning/XAUUSD bot pollers.
+
+Commands:
+
+```text
+/start
+/help
+/morning
+/gold
+/london
+/newyork
+/status
+/health
+```
+
+Schedule:
+
+```text
+07:30 Asia/Bangkok - morning briefing
+```
+
+## Legacy Bots
 
 ### Morning Bot
+
+The legacy Morning Bot remains available for compatibility.
 
 Enabled when these environment variables are present:
 
@@ -25,7 +61,7 @@ Commands:
 Schedule:
 
 ```text
-08:00 Asia/Bangkok - morning briefing
+07:30 Asia/Bangkok - morning briefing
 ```
 
 ### XAUUSD Bot
@@ -40,6 +76,15 @@ XAUUSD_CHAT_ID=
 ```
 
 If these are missing, the platform logs that the XAUUSD bot is disabled and keeps running the morning bot.
+
+After Jeremy Assistant is tested successfully, you can remove these legacy Railway variables:
+
+```text
+MORNING_BOT_TOKEN
+MORNING_CHAT_ID
+XAUUSD_BOT_TOKEN
+XAUUSD_CHAT_ID
+```
 
 ## Project Structure
 
@@ -88,6 +133,10 @@ cp .env.example .env
 Add your values:
 
 ```text
+ASSISTANT_BOT_TOKEN=your_jeremy_assistant_bot_token
+ASSISTANT_CHAT_ID=your_telegram_chat_id
+
+# Legacy fallback variables. Optional once Jeremy Assistant is working.
 MORNING_BOT_TOKEN=your_morning_bot_token
 MORNING_CHAT_ID=your_telegram_chat_id
 
@@ -111,23 +160,34 @@ For a short startup test:
 python -m automation_platform.main --run-seconds 10
 ```
 
-## Test The Morning Bot
+For a non-polling startup check:
+
+```bash
+python -m automation_platform.main --check-startup
+```
+
+## Test Jeremy Assistant
 
 Open Telegram and send:
 
 ```text
 /start
+/help
 /morning
+/gold
+/london
+/newyork
+/status
+/health
 ```
 
 The platform logs should show:
 
 ```text
 Platform starting...
-Morning bot starting...
-XAUUSD bot disabled...
+Jeremy Assistant starting...
 Scheduler started.
-morning bot Telegram polling started.
+assistant bot Telegram polling started.
 ```
 
 ## Railway Deployment
@@ -144,19 +204,21 @@ python -m automation_platform.main
 5. Add these Railway environment variables:
 
 ```text
-MORNING_BOT_TOKEN=your_morning_bot_token
-MORNING_CHAT_ID=your_telegram_chat_id
+ASSISTANT_BOT_TOKEN=your_jeremy_assistant_bot_token
+ASSISTANT_CHAT_ID=your_telegram_chat_id
 TIMEZONE=Asia/Bangkok
 ```
 
-Optional future XAUUSD bot variables:
+Legacy variables can stay during testing:
 
 ```text
-XAUUSD_BOT_TOKEN=your_xauusd_bot_token
+MORNING_BOT_TOKEN=your_morning_bot_token
+MORNING_CHAT_ID=your_telegram_chat_id
+XAUUSD_BOT_TOKEN=your_legacy_xauusd_bot_token
 XAUUSD_CHAT_ID=your_telegram_chat_id
 ```
 
-If the XAUUSD values are not set, the platform still deploys and runs the morning bot.
+If the Assistant values are not set, the platform falls back to the legacy Morning/XAUUSD bot setup.
 
 ## Railway Notes
 
@@ -193,4 +255,3 @@ automation_platform/shared/
 ```
 
 This keeps one Railway service flexible without turning the project into a complicated framework.
-

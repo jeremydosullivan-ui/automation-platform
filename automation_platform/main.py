@@ -10,6 +10,8 @@ from dataclasses import dataclass
 
 from telegram.ext import Application
 
+from automation_platform.bots.assistant_bot.handlers import register_handlers as register_assistant_handlers
+from automation_platform.bots.assistant_bot.scheduler import register_jobs as register_assistant_jobs
 from automation_platform.bots.morning_bot.handlers import register_handlers as register_morning_handlers
 from automation_platform.bots.morning_bot.scheduler import register_jobs as register_morning_jobs
 from automation_platform.bots.xauusd_bot.handlers import register_handlers as register_xauusd_handlers
@@ -60,21 +62,28 @@ async def run_platform(config: PlatformConfig, *, run_seconds: int | None = None
     logger.info("Platform starting...")
     scheduler = create_scheduler(config)
     runtime_state = {
+        "assistant_polling": False,
         "morning_polling": False,
         "xauusd_polling": False,
     }
     runtimes: list[BotRuntime] = []
 
-    morning_runtime = _build_morning_runtime(config, scheduler, runtime_state)
-    if morning_runtime:
-        runtimes.append(morning_runtime)
+    if config.assistant_mode_enabled:
+        assistant_runtime = _build_assistant_runtime(config, scheduler, runtime_state)
+        if assistant_runtime:
+            runtimes.append(assistant_runtime)
+    else:
+        logger.info("Assistant bot disabled. Falling back to legacy bot setup.")
+        morning_runtime = _build_morning_runtime(config, scheduler, runtime_state)
+        if morning_runtime:
+            runtimes.append(morning_runtime)
 
-    xauusd_runtime = _build_xauusd_runtime(config, scheduler, runtime_state)
-    if xauusd_runtime:
-        runtimes.append(xauusd_runtime)
+        xauusd_runtime = _build_xauusd_runtime(config, scheduler, runtime_state)
+        if xauusd_runtime:
+            runtimes.append(xauusd_runtime)
 
     if not runtimes:
-        raise RuntimeError("No bots are enabled. Add at least MORNING_BOT_TOKEN/MORNING_CHAT_ID.")
+        raise RuntimeError("No bots are enabled. Add ASSISTANT_BOT_TOKEN/ASSISTANT_CHAT_ID or legacy bot credentials.")
 
     scheduler.start()
     logger.info("Scheduler started.")
@@ -95,6 +104,21 @@ async def run_platform(config: PlatformConfig, *, run_seconds: int | None = None
         if scheduler.running:
             scheduler.shutdown(wait=False)
         logger.info("Platform stopped.")
+
+
+def _build_assistant_runtime(config: PlatformConfig, scheduler, runtime_state: dict[str, bool]) -> BotRuntime | None:
+    bot_config = config.assistant_bot
+    if not bot_config.enabled:
+        logger.info("Jeremy Assistant disabled. Add ASSISTANT_BOT_TOKEN and ASSISTANT_CHAT_ID to enable it.")
+        return None
+
+    logger.info("Jeremy Assistant starting...")
+    application = build_application(bot_config)
+    application.bot_data["scheduler"] = scheduler
+    application.bot_data["runtime_state"] = runtime_state
+    register_assistant_handlers(application, config, bot_config)
+    register_assistant_jobs(scheduler, application, config, bot_config)
+    return BotRuntime(name="assistant", application=application, runtime_state=runtime_state)
 
 
 def _build_morning_runtime(config: PlatformConfig, scheduler, runtime_state: dict[str, bool]) -> BotRuntime | None:
@@ -149,6 +173,11 @@ def parse_args() -> argparse.Namespace:
         type=int,
         help="run briefly for local startup testing, then stop",
     )
+    parser.add_argument(
+        "--check-startup",
+        action="store_true",
+        help="build runtime configuration without starting Telegram polling",
+    )
     return parser.parse_args()
 
 
@@ -156,7 +185,40 @@ def main() -> None:
     setup_logging()
     args = parse_args()
     config = load_config()
-    asyncio.run(run_platform(config, run_seconds=args.run_seconds))
+    if args.check_startup:
+        check_startup(config)
+    else:
+        asyncio.run(run_platform(config, run_seconds=args.run_seconds))
+
+
+def check_startup(config: PlatformConfig) -> None:
+    """Build the configured bot runtime without connecting to Telegram."""
+
+    logger.info("Platform startup check...")
+    scheduler = create_scheduler(config)
+    runtime_state = {
+        "assistant_polling": False,
+        "morning_polling": False,
+        "xauusd_polling": False,
+    }
+
+    if config.assistant_mode_enabled:
+        runtime = _build_assistant_runtime(config, scheduler, runtime_state)
+        enabled = [runtime.name] if runtime else []
+    else:
+        enabled = []
+        morning_runtime = _build_morning_runtime(config, scheduler, runtime_state)
+        xauusd_runtime = _build_xauusd_runtime(config, scheduler, runtime_state)
+        if morning_runtime:
+            enabled.append(morning_runtime.name)
+        if xauusd_runtime:
+            enabled.append(xauusd_runtime.name)
+
+    if not enabled:
+        raise RuntimeError("No bots would start with the current configuration.")
+
+    logger.info("Startup check passed. Enabled bot runtimes: %s", ", ".join(enabled))
+    logger.info("Registered jobs:\n%s", describe_jobs(scheduler))
 
 
 if __name__ == "__main__":

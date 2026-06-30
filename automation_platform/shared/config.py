@@ -32,12 +32,17 @@ class PlatformConfig:
     """Settings shared by the whole platform."""
 
     timezone_name: str
+    assistant_bot: BotConfig
     morning_bot: BotConfig
     xauusd_bot: BotConfig
 
     @property
     def timezone(self) -> ZoneInfo:
         return ZoneInfo(self.timezone_name)
+
+    @property
+    def assistant_mode_enabled(self) -> bool:
+        return self.assistant_bot.enabled
 
 
 def load_config() -> PlatformConfig:
@@ -56,6 +61,11 @@ def load_config() -> PlatformConfig:
 
     return PlatformConfig(
         timezone_name=os.getenv("TIMEZONE", "Asia/Bangkok").strip(),
+        assistant_bot=BotConfig(
+            name="assistant",
+            token=_env("ASSISTANT_BOT_TOKEN"),
+            chat_id=_int_env("ASSISTANT_CHAT_ID"),
+        ),
         morning_bot=BotConfig(
             name="morning",
             token=_env("MORNING_BOT_TOKEN", fallback="TELEGRAM_BOT_TOKEN"),
@@ -85,4 +95,3 @@ def _int_env(name: str, fallback: str | None = None) -> int | None:
         return int(raw)
     except ValueError:
         raise RuntimeError(f"{name} must be a number.") from None
-

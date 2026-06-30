@@ -22,8 +22,8 @@ def describe_jobs(scheduler: AsyncIOScheduler) -> str:
 
     lines: list[str] = []
     for job in jobs:
-        next_run = job.next_run_time.strftime("%Y-%m-%d %H:%M:%S %Z") if job.next_run_time else "not scheduled yet"
+        next_run_time = getattr(job, "next_run_time", None)
+        next_run = next_run_time.strftime("%Y-%m-%d %H:%M:%S %Z") if next_run_time else "not scheduled yet"
         lines.append(f"- {job.id}: {next_run}")
 
     return "\n".join(lines)
-
