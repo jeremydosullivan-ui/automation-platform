@@ -35,6 +35,7 @@ class PlatformConfig:
     assistant_bot: BotConfig
     morning_bot: BotConfig
     xauusd_bot: BotConfig
+    xauusd: "XauusdConfig"
 
     @property
     def timezone(self) -> ZoneInfo:
@@ -43,6 +44,23 @@ class PlatformConfig:
     @property
     def assistant_mode_enabled(self) -> bool:
         return self.assistant_bot.enabled
+
+
+@dataclass(frozen=True)
+class XauusdConfig:
+    """Settings for the XAUUSD awareness module."""
+
+    price_level_alert_distance_usd: float
+    rsi_oversold: float
+    rsi_overbought: float
+    level_alert_cooldown_minutes: int
+    rsi_alert_cooldown_minutes: int
+    ema_alert_cooldown_minutes: int
+    volatility_alert_cooldown_minutes: int
+    choppy_alert_cooldown_minutes: int
+    gold_api_key: str | None
+    news_api_key: str | None
+    economic_calendar_api_key: str | None
 
 
 def load_config() -> PlatformConfig:
@@ -76,6 +94,19 @@ def load_config() -> PlatformConfig:
             token=_env("XAUUSD_BOT_TOKEN"),
             chat_id=_int_env("XAUUSD_CHAT_ID"),
         ),
+        xauusd=XauusdConfig(
+            price_level_alert_distance_usd=_float_env("PRICE_LEVEL_ALERT_DISTANCE_USD", 5),
+            rsi_oversold=_float_env("RSI_OVERSOLD", 30),
+            rsi_overbought=_float_env("RSI_OVERBOUGHT", 70),
+            level_alert_cooldown_minutes=_int_setting("LEVEL_ALERT_COOLDOWN_MINUTES", 60),
+            rsi_alert_cooldown_minutes=_int_setting("RSI_ALERT_COOLDOWN_MINUTES", 60),
+            ema_alert_cooldown_minutes=_int_setting("EMA_ALERT_COOLDOWN_MINUTES", 120),
+            volatility_alert_cooldown_minutes=_int_setting("VOLATILITY_ALERT_COOLDOWN_MINUTES", 120),
+            choppy_alert_cooldown_minutes=_int_setting("CHOPPY_ALERT_COOLDOWN_MINUTES", 180),
+            gold_api_key=_env("GOLD_API_KEY"),
+            news_api_key=_env("NEWS_API_KEY"),
+            economic_calendar_api_key=_env("ECONOMIC_CALENDAR_API_KEY"),
+        ),
     )
 
 
@@ -93,5 +124,27 @@ def _int_env(name: str, fallback: str | None = None) -> int | None:
 
     try:
         return int(raw)
+    except ValueError:
+        raise RuntimeError(f"{name} must be a number.") from None
+
+
+def _int_setting(name: str, default: int) -> int:
+    raw = _env(name)
+    if not raw:
+        return default
+
+    try:
+        return int(raw)
+    except ValueError:
+        raise RuntimeError(f"{name} must be a whole number.") from None
+
+
+def _float_env(name: str, default: float) -> float:
+    raw = _env(name)
+    if not raw:
+        return default
+
+    try:
+        return float(raw)
     except ValueError:
         raise RuntimeError(f"{name} must be a number.") from None

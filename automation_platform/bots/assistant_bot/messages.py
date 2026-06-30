@@ -9,9 +9,9 @@ def build_start_message() -> str:
         "Available commands:\n"
         "/help - show all commands\n"
         "/morning - send the morning briefing\n"
-        "/gold - show XAUUSD placeholder status\n"
-        "/london - London session watch placeholder\n"
-        "/newyork - New York session watch placeholder\n"
+        "/gold - show current XAUUSD market snapshot\n"
+        "/london - London session watch\n"
+        "/newyork - New York session watch\n"
         "/status - assistant status\n"
         "/health - platform health check"
     )
@@ -23,35 +23,11 @@ def build_help_message() -> str:
         "/start - confirm Jeremy Assistant is alive\n"
         "/help - list commands and what they do\n"
         "/morning - send the existing morning briefing now\n"
-        "/gold - show current XAUUSD module placeholder status\n"
-        "/london - placeholder for London session watch\n"
-        "/newyork - placeholder for New York session watch\n"
+        "/gold - show current XAUUSD market snapshot\n"
+        "/london - show London session watch\n"
+        "/newyork - show New York session watch\n"
         "/status - show assistant-level status\n"
         "/health - show platform-level diagnostics"
-    )
-
-
-def build_gold_message() -> str:
-    return (
-        "🥇 XAUUSD module status\n\n"
-        "Enabled through Jeremy Assistant, but trading-alert features are not implemented yet.\n\n"
-        "This does not provide trading signals or financial advice."
-    )
-
-
-def build_london_message() -> str:
-    return (
-        "🇬🇧 London Session Watch\n\n"
-        "Placeholder active.\n\n"
-        "London session logic has not been implemented yet."
-    )
-
-
-def build_newyork_message() -> str:
-    return (
-        "🇺🇸 New York Session Watch\n\n"
-        "Placeholder active.\n\n"
-        "New York session logic has not been implemented yet."
     )
 
 
@@ -68,7 +44,10 @@ def build_status_message(timezone_name: str, current_time: str, scheduler_runnin
         f"{timezone_name}\n\n"
         "Active Interface:\n"
         "Jeremy Assistant\n\n"
+        "XAUUSD Module:\n"
+        "✅ Market snapshot enabled\n"
+        "✅ London/New York watches enabled\n"
+        "✅ 15-minute scanner enabled\n\n"
         "Version:\n"
         "automation-platform v1"
     )
-

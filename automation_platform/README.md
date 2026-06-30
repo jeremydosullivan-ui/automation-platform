@@ -12,6 +12,33 @@ Preferred Railway variables for Jeremy Assistant:
 ASSISTANT_BOT_TOKEN=
 ASSISTANT_CHAT_ID=
 TIMEZONE=Asia/Bangkok
+PRICE_LEVEL_ALERT_DISTANCE_USD=5
+RSI_OVERSOLD=30
+RSI_OVERBOUGHT=70
+LEVEL_ALERT_COOLDOWN_MINUTES=60
+RSI_ALERT_COOLDOWN_MINUTES=60
+EMA_ALERT_COOLDOWN_MINUTES=120
+VOLATILITY_ALERT_COOLDOWN_MINUTES=120
+CHOPPY_ALERT_COOLDOWN_MINUTES=180
+```
+
+The XAUUSD module uses the free Yahoo Finance chart API with symbol `GC=F` as the Version 1 gold proxy. No market data API key is required.
+
+Optional future provider keys:
+
+```text
+GOLD_API_KEY=
+NEWS_API_KEY=
+ECONOMIC_CALENDAR_API_KEY=
+```
+
+Scheduled jobs in Assistant mode:
+
+```text
+07:30 Asia/Bangkok - morning briefing
+14:00 Asia/Bangkok - London session watch
+20:30 Asia/Bangkok - New York session watch
+Every 15 minutes - silent XAUUSD scan
 ```
 
 Legacy fallback variables:
@@ -24,5 +51,7 @@ XAUUSD_CHAT_ID=
 ```
 
 If Assistant variables are present, only Jeremy Assistant starts. If Assistant variables are missing, the platform falls back to the legacy separate bots.
+
+Trading disclaimer: this bot is for education, market awareness, and discipline support only. It does not provide financial advice or buy/sell instructions. Trading XAUUSD involves significant risk.
 
 See the root `README.md` for full setup and deployment instructions.

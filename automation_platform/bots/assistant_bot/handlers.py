@@ -10,14 +10,12 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
 from automation_platform.bots.assistant_bot.messages import (
-    build_gold_message,
     build_help_message,
-    build_london_message,
-    build_newyork_message,
     build_start_message,
     build_status_message,
 )
 from automation_platform.bots.morning_bot.messages import build_morning_message
+from automation_platform.bots.xauusd_bot.messages import build_gold_message, build_london_message, build_newyork_message
 from automation_platform.shared.config import BotConfig, PlatformConfig
 from automation_platform.shared.handlers import health_handler
 from automation_platform.shared.telegram import allowed_chat
@@ -77,31 +75,38 @@ async def morning_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 async def gold_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     bot_config: BotConfig = context.application.bot_data["bot_config"]
+    platform_config: PlatformConfig = context.application.bot_data["platform_config"]
     if not await allowed_chat(update, bot_config):
         return
 
     logger.info("/gold received by assistant from chat %s.", update.effective_chat.id)
-    await update.effective_chat.send_message(build_gold_message())
+    await update.effective_chat.send_message("Fetching XAUUSD market data...")
+    message = await asyncio.to_thread(build_gold_message, platform_config)
+    await update.effective_chat.send_message(message)
     logger.info("Assistant responded to /gold.")
 
 
 async def london_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     bot_config: BotConfig = context.application.bot_data["bot_config"]
+    platform_config: PlatformConfig = context.application.bot_data["platform_config"]
     if not await allowed_chat(update, bot_config):
         return
 
     logger.info("/london received by assistant from chat %s.", update.effective_chat.id)
-    await update.effective_chat.send_message(build_london_message())
+    message = await asyncio.to_thread(build_london_message, platform_config)
+    await update.effective_chat.send_message(message)
     logger.info("Assistant responded to /london.")
 
 
 async def newyork_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     bot_config: BotConfig = context.application.bot_data["bot_config"]
+    platform_config: PlatformConfig = context.application.bot_data["platform_config"]
     if not await allowed_chat(update, bot_config):
         return
 
     logger.info("/newyork received by assistant from chat %s.", update.effective_chat.id)
-    await update.effective_chat.send_message(build_newyork_message())
+    message = await asyncio.to_thread(build_newyork_message, platform_config)
+    await update.effective_chat.send_message(message)
     logger.info("Assistant responded to /newyork.")
 
 
@@ -122,4 +127,3 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         )
     )
     logger.info("Assistant responded to /status.")
-

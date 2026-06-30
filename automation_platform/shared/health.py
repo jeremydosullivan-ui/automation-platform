@@ -9,6 +9,7 @@ from typing import Any
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+from automation_platform.bots.xauusd_bot.market_data import DATA_SOURCE_LABEL
 from automation_platform.shared.config import PlatformConfig
 
 
@@ -43,6 +44,10 @@ def build_health_message(context: Any, platform_config: PlatformConfig) -> str:
             "Scheduler:",
             _scheduler_status(scheduler),
             "",
+            "XAUUSD:",
+            f"Data Source: {DATA_SOURCE_LABEL}",
+            f"Scanner: {_job_registered(scheduler, 'silent_market_scan')}",
+            "",
             "Next Scheduled Jobs:",
             _scheduled_jobs(scheduler),
             "",
@@ -68,7 +73,7 @@ def _bot_lines(platform_config: PlatformConfig) -> list[str]:
         return [
             _bot_status("Jeremy Assistant", platform_config.assistant_bot.enabled, placeholder=False),
             "✅ Morning Module: Enabled",
-            "✅ XAUUSD Module: Placeholder",
+            "✅ XAUUSD Module: Enabled",
         ]
 
     return [
@@ -99,6 +104,12 @@ def _scheduler_status(scheduler: AsyncIOScheduler | None) -> str:
     if scheduler is None:
         return "⚠️ Scheduler unavailable"
     return "✅ Running" if scheduler.running else "⚠️ Not running"
+
+
+def _job_registered(scheduler: AsyncIOScheduler | None, job_id: str) -> str:
+    if scheduler is None:
+        return "Unavailable"
+    return "Registered" if scheduler.get_job(job_id) else "Not registered"
 
 
 def _scheduled_jobs(scheduler: AsyncIOScheduler | None) -> str:

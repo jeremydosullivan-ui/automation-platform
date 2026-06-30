@@ -36,7 +36,49 @@ Schedule:
 
 ```text
 07:30 Asia/Bangkok - morning briefing
+14:00 Asia/Bangkok - London session watch
+20:30 Asia/Bangkok - New York session watch
+Every 15 minutes - silent XAUUSD scan, alerts only when conditions trigger
 ```
+
+## XAUUSD Module
+
+Jeremy Assistant now includes a Version 1 XAUUSD trading-awareness module.
+
+It does:
+
+- show current gold market context with `/gold`
+- show London and New York session watch messages
+- calculate EMA 50, EMA 200, RSI 14, and ATR 14
+- estimate 1H, 4H, and 1D trend
+- detect simple support and resistance from recent swing highs/lows
+- scan silently every 15 minutes and alert only when configured conditions trigger
+
+It does not:
+
+- provide buy or sell signals
+- provide financial advice
+- replace your own trading plan or risk management
+
+Market data source:
+
+```text
+Yahoo Finance chart API, symbol GC=F
+```
+
+`GC=F` is a free gold futures proxy used as the practical Version 1 fallback for XAUUSD/gold spot awareness. It does not require an API key.
+
+News and economic calendar support:
+
+```text
+Market events unavailable.
+```
+
+Version 1 keeps this as a clean fallback. Optional provider keys can be added later through `NEWS_API_KEY` or `ECONOMIC_CALENDAR_API_KEY`.
+
+Important disclaimer:
+
+This bot is for education, market awareness, and discipline support only. It does not provide financial advice. It does not issue buy or sell instructions. Trading XAUUSD involves significant risk.
 
 ## Legacy Bots
 
@@ -144,6 +186,20 @@ XAUUSD_BOT_TOKEN=
 XAUUSD_CHAT_ID=
 
 TIMEZONE=Asia/Bangkok
+
+PRICE_LEVEL_ALERT_DISTANCE_USD=5
+RSI_OVERSOLD=30
+RSI_OVERBOUGHT=70
+
+LEVEL_ALERT_COOLDOWN_MINUTES=60
+RSI_ALERT_COOLDOWN_MINUTES=60
+EMA_ALERT_COOLDOWN_MINUTES=120
+VOLATILITY_ALERT_COOLDOWN_MINUTES=120
+CHOPPY_ALERT_COOLDOWN_MINUTES=180
+
+GOLD_API_KEY=
+NEWS_API_KEY=
+ECONOMIC_CALENDAR_API_KEY=
 ```
 
 ## Run Locally
@@ -188,6 +244,10 @@ Platform starting...
 Jeremy Assistant starting...
 Scheduler started.
 assistant bot Telegram polling started.
+assistant_daily_morning_briefing
+london_session_watch
+newyork_session_watch
+silent_market_scan
 ```
 
 ## Railway Deployment
@@ -207,6 +267,24 @@ python -m automation_platform.main
 ASSISTANT_BOT_TOKEN=your_jeremy_assistant_bot_token
 ASSISTANT_CHAT_ID=your_telegram_chat_id
 TIMEZONE=Asia/Bangkok
+PRICE_LEVEL_ALERT_DISTANCE_USD=5
+RSI_OVERSOLD=30
+RSI_OVERBOUGHT=70
+LEVEL_ALERT_COOLDOWN_MINUTES=60
+RSI_ALERT_COOLDOWN_MINUTES=60
+EMA_ALERT_COOLDOWN_MINUTES=120
+VOLATILITY_ALERT_COOLDOWN_MINUTES=120
+CHOPPY_ALERT_COOLDOWN_MINUTES=180
+```
+
+No market data API key is required for Version 1 because the module uses Yahoo Finance `GC=F`.
+
+Optional future keys:
+
+```text
+GOLD_API_KEY=
+NEWS_API_KEY=
+ECONOMIC_CALENDAR_API_KEY=
 ```
 
 Legacy variables can stay during testing:
