@@ -98,6 +98,7 @@ def _build_morning_runtime(config: PlatformConfig, scheduler) -> BotRuntime | No
 
     logger.info("Morning bot starting...")
     application = build_application(bot_config)
+    application.bot_data["scheduler"] = scheduler
     register_morning_handlers(application, config, bot_config)
     register_morning_jobs(scheduler, application, config, bot_config)
     return BotRuntime(name="morning", application=application)
@@ -111,6 +112,7 @@ def _build_xauusd_runtime(config: PlatformConfig, scheduler) -> BotRuntime | Non
 
     logger.info("XAUUSD bot starting...")
     application = build_application(bot_config)
+    application.bot_data["scheduler"] = scheduler
     register_xauusd_handlers(application, config, bot_config)
     register_xauusd_jobs(scheduler, application, config, bot_config)
     return BotRuntime(name="xauusd", application=application)
@@ -150,4 +152,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

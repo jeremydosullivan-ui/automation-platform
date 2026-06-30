@@ -16,17 +16,21 @@ from automation_platform.shared.config import BotConfig, PlatformConfig
 logger = logging.getLogger(__name__)
 
 
+MORNING_BRIEF_HOUR = 7
+MORNING_BRIEF_MINUTE = 30
+
+
 def register_jobs(scheduler: AsyncIOScheduler, application: Application, platform_config: PlatformConfig, bot_config: BotConfig) -> None:
-    """Schedule the daily 08:00 Bangkok morning briefing."""
+    """Schedule the daily 07:30 Bangkok morning briefing."""
 
     scheduler.add_job(
         send_scheduled_morning,
-        CronTrigger(hour=8, minute=0, timezone=platform_config.timezone),
+        CronTrigger(hour=MORNING_BRIEF_HOUR, minute=MORNING_BRIEF_MINUTE, timezone=platform_config.timezone),
         args=[application, platform_config, bot_config],
         id="morning_bot_daily_briefing",
         replace_existing=True,
     )
-    logger.info("Morning bot daily job registered for 08:00 %s.", platform_config.timezone_name)
+    logger.info("Morning bot daily job registered for 07:30 %s.", platform_config.timezone_name)
 
 
 async def send_scheduled_morning(application: Application, platform_config: PlatformConfig, bot_config: BotConfig) -> None:
@@ -37,4 +41,3 @@ async def send_scheduled_morning(application: Application, platform_config: Plat
     message = await asyncio.to_thread(build_morning_message, platform_config.timezone)
     await application.bot.send_message(chat_id=bot_config.chat_id, text=message)
     logger.info("Morning bot scheduled briefing sent.")
-

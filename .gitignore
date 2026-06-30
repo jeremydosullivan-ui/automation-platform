@@ -5,5 +5,5 @@ __pycache__/
 .DS_Store
 
 # Legacy standalone bot packages kept locally for reference.
-morning_bot/
-xauusd_alert_bot/
+/morning_bot/
+/xauusd_alert_bot/
