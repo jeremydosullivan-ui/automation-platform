@@ -9,6 +9,7 @@ from telegram.ext import Application, CommandHandler, ContextTypes
 
 from automation_platform.bots.xauusd_bot.messages import build_start_message, build_status_message
 from automation_platform.shared.config import BotConfig, PlatformConfig
+from automation_platform.shared.handlers import health_handler
 from automation_platform.shared.telegram import allowed_chat
 
 
@@ -20,6 +21,7 @@ def register_handlers(application: Application, platform_config: PlatformConfig,
     application.bot_data["bot_config"] = bot_config
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("status", status_command))
+    application.add_handler(health_handler())
 
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

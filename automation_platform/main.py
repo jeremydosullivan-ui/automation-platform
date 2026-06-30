@@ -29,6 +29,7 @@ class BotRuntime:
 
     name: str
     application: Application
+    runtime_state: dict[str, bool]
 
     async def start(self) -> None:
         await self.application.initialize()
@@ -38,6 +39,7 @@ class BotRuntime:
 
         await self.application.updater.start_polling(drop_pending_updates=True)
         await self.application.start()
+        self.runtime_state[f"{self.name}_polling"] = True
         logger.info("%s bot Telegram polling started.", self.name)
 
     async def stop(self) -> None:
@@ -48,6 +50,7 @@ class BotRuntime:
             await self.application.stop()
 
         await self.application.shutdown()
+        self.runtime_state[f"{self.name}_polling"] = False
         logger.info("%s bot stopped.", self.name)
 
 
@@ -56,13 +59,17 @@ async def run_platform(config: PlatformConfig, *, run_seconds: int | None = None
 
     logger.info("Platform starting...")
     scheduler = create_scheduler(config)
+    runtime_state = {
+        "morning_polling": False,
+        "xauusd_polling": False,
+    }
     runtimes: list[BotRuntime] = []
 
-    morning_runtime = _build_morning_runtime(config, scheduler)
+    morning_runtime = _build_morning_runtime(config, scheduler, runtime_state)
     if morning_runtime:
         runtimes.append(morning_runtime)
 
-    xauusd_runtime = _build_xauusd_runtime(config, scheduler)
+    xauusd_runtime = _build_xauusd_runtime(config, scheduler, runtime_state)
     if xauusd_runtime:
         runtimes.append(xauusd_runtime)
 
@@ -90,7 +97,7 @@ async def run_platform(config: PlatformConfig, *, run_seconds: int | None = None
         logger.info("Platform stopped.")
 
 
-def _build_morning_runtime(config: PlatformConfig, scheduler) -> BotRuntime | None:
+def _build_morning_runtime(config: PlatformConfig, scheduler, runtime_state: dict[str, bool]) -> BotRuntime | None:
     bot_config = config.morning_bot
     if not bot_config.enabled:
         logger.info("Morning bot disabled. Add MORNING_BOT_TOKEN and MORNING_CHAT_ID to enable it.")
@@ -99,12 +106,13 @@ def _build_morning_runtime(config: PlatformConfig, scheduler) -> BotRuntime | No
     logger.info("Morning bot starting...")
     application = build_application(bot_config)
     application.bot_data["scheduler"] = scheduler
+    application.bot_data["runtime_state"] = runtime_state
     register_morning_handlers(application, config, bot_config)
     register_morning_jobs(scheduler, application, config, bot_config)
-    return BotRuntime(name="morning", application=application)
+    return BotRuntime(name="morning", application=application, runtime_state=runtime_state)
 
 
-def _build_xauusd_runtime(config: PlatformConfig, scheduler) -> BotRuntime | None:
+def _build_xauusd_runtime(config: PlatformConfig, scheduler, runtime_state: dict[str, bool]) -> BotRuntime | None:
     bot_config = config.xauusd_bot
     if not bot_config.enabled:
         logger.info("XAUUSD bot disabled. Add XAUUSD_BOT_TOKEN and XAUUSD_CHAT_ID to enable it.")
@@ -113,9 +121,10 @@ def _build_xauusd_runtime(config: PlatformConfig, scheduler) -> BotRuntime | Non
     logger.info("XAUUSD bot starting...")
     application = build_application(bot_config)
     application.bot_data["scheduler"] = scheduler
+    application.bot_data["runtime_state"] = runtime_state
     register_xauusd_handlers(application, config, bot_config)
     register_xauusd_jobs(scheduler, application, config, bot_config)
-    return BotRuntime(name="xauusd", application=application)
+    return BotRuntime(name="xauusd", application=application, runtime_state=runtime_state)
 
 
 async def _wait_for_shutdown_signal() -> None:

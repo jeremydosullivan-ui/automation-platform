@@ -12,6 +12,7 @@ from telegram.ext import Application, CommandHandler, ContextTypes
 from automation_platform.bots.morning_bot.messages import build_morning_message
 from automation_platform.bots.morning_bot.scheduler import MORNING_BRIEF_HOUR, MORNING_BRIEF_MINUTE
 from automation_platform.shared.config import BotConfig, PlatformConfig
+from automation_platform.shared.handlers import health_handler
 from automation_platform.shared.telegram import allowed_chat
 
 
@@ -26,6 +27,7 @@ def register_handlers(application: Application, platform_config: PlatformConfig,
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("morning", morning_command))
     application.add_handler(CommandHandler("status", status_command))
+    application.add_handler(health_handler())
 
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
