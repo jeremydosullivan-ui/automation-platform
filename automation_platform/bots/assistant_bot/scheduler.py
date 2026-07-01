@@ -11,6 +11,7 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 from telegram.ext import Application
 
+from automation_platform.bots.assistant_bot.messages import build_inspection_message
 from automation_platform.bots.morning_bot.messages import build_morning_message
 from automation_platform.bots.morning_bot.scheduler import MORNING_BRIEF_HOUR, MORNING_BRIEF_MINUTE
 from automation_platform.bots.xauusd_bot.alerts import evaluate_alerts
@@ -62,6 +63,15 @@ def register_jobs(scheduler: AsyncIOScheduler, application: Application, platfor
     )
     logger.info("Jeremy Assistant silent XAUUSD scan registered for every 15 minutes.")
 
+    scheduler.add_job(
+        send_inspection_reminder,
+        CronTrigger(hour="8-23", minute=0, timezone=platform_config.timezone),
+        args=[application, bot_config],
+        id="xauusd_hourly_inspection_reminder",
+        replace_existing=True,
+    )
+    logger.info("Inspection reminder job registered for every hour from 08:00 through 23:00 %s.", platform_config.timezone_name)
+
 
 async def send_scheduled_morning(application: Application, platform_config: PlatformConfig, bot_config: BotConfig) -> None:
     if not bot_config.chat_id:
@@ -97,6 +107,19 @@ async def send_scheduled_newyork(application: Application, platform_config: Plat
         logger.info("Jeremy Assistant New York session watch sent.")
     except Exception:
         logger.exception("New York session watch failed.")
+
+
+async def send_inspection_reminder(application: Application, bot_config: BotConfig) -> None:
+    if not bot_config.chat_id:
+        logger.warning("Assistant chat ID missing; skipping inspection reminder.")
+        return
+
+    try:
+        logger.info("Sending inspection reminder.")
+        await application.bot.send_message(chat_id=bot_config.chat_id, text=build_inspection_message())
+        logger.info("Inspection reminder sent.")
+    except Exception:
+        logger.exception("Inspection reminder failed.")
 
 
 async def run_silent_market_scan(application: Application, platform_config: PlatformConfig, bot_config: BotConfig) -> None:

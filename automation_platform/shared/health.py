@@ -140,6 +140,7 @@ def _job_label(job_id: str) -> str:
         "london_session_watch": "14:00 — London Watch",
         "newyork_session_watch": "20:30 — New York Watch",
         "silent_market_scan": "Every 15 min — XAUUSD scan",
+        "xauusd_hourly_inspection_reminder": "08:00-23:00 hourly — XAUUSD Inspection",
     }
     return labels.get(job_id, job_id.replace("_", " "))
 

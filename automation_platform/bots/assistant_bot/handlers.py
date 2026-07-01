@@ -11,6 +11,7 @@ from telegram.ext import Application, CommandHandler, ContextTypes
 
 from automation_platform.bots.assistant_bot.messages import (
     build_help_message,
+    build_inspection_message,
     build_start_message,
     build_status_message,
 )
@@ -36,6 +37,7 @@ def register_handlers(application: Application, platform_config: PlatformConfig,
     application.add_handler(CommandHandler("gold", gold_command))
     application.add_handler(CommandHandler("london", london_command))
     application.add_handler(CommandHandler("newyork", newyork_command))
+    application.add_handler(CommandHandler("inspection", inspection_command))
     application.add_handler(CommandHandler("status", status_command))
     application.add_handler(health_handler())
 
@@ -108,6 +110,16 @@ async def newyork_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     message = await asyncio.to_thread(build_newyork_message, platform_config)
     await update.effective_chat.send_message(message)
     logger.info("Assistant responded to /newyork.")
+
+
+async def inspection_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    bot_config: BotConfig = context.application.bot_data["bot_config"]
+    if not await allowed_chat(update, bot_config):
+        return
+
+    logger.info("/inspection received by assistant from chat %s.", update.effective_chat.id)
+    await update.effective_chat.send_message(build_inspection_message())
+    logger.info("/inspection sent by assistant.")
 
 
 async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
