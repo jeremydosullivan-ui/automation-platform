@@ -115,9 +115,7 @@ def _job_registered(scheduler: AsyncIOScheduler | None, job_id: str) -> str:
 
 
 def _calendar_source_status(platform_config: PlatformConfig) -> str:
-    if platform_config.xauusd.economic_calendar_api_key:
-        return f"{CALENDAR_PROVIDER_LABEL} configured"
-    return f"{CALENDAR_PROVIDER_LABEL} not configured"
+    return f"{CALENDAR_PROVIDER_LABEL} enabled"
 
 
 def _scheduled_jobs(scheduler: AsyncIOScheduler | None) -> str:

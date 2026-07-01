@@ -71,14 +71,12 @@ Yahoo Finance chart API, symbol GC=F
 News and economic calendar support:
 
 ```text
-Finnhub Economic Calendar
+Free calendar: Forex Factory feed + official US sources
 ```
 
-Set `ECONOMIC_CALENDAR_API_KEY` to a Finnhub API key to show today's high/medium impact US events that are relevant to gold. Without this key, the bot keeps working and shows:
+The bot uses a no-key Forex Factory/Fair Economy weekly calendar feed for USD events, plus official BEA, Census, and Federal Reserve pages where practical. No economic calendar API key is required.
 
-```text
-Market events unavailable.
-```
+If all free calendar sources are temporarily unavailable, the bot keeps working and shows `Market events unavailable.`
 
 Important disclaimer:
 
@@ -203,7 +201,7 @@ CHOPPY_ALERT_COOLDOWN_MINUTES=180
 
 GOLD_API_KEY=
 NEWS_API_KEY=
-ECONOMIC_CALENDAR_API_KEY=your_finnhub_api_key_optional
+ECONOMIC_CALENDAR_API_KEY=
 ```
 
 ## Run Locally
@@ -283,12 +281,12 @@ CHOPPY_ALERT_COOLDOWN_MINUTES=180
 
 No market data API key is required for Version 1 because the module uses Yahoo Finance `GC=F`.
 
-Optional future keys:
+Optional future keys are reserved but not required for Version 1:
 
 ```text
 GOLD_API_KEY=
 NEWS_API_KEY=
-ECONOMIC_CALENDAR_API_KEY=your_finnhub_api_key_optional
+ECONOMIC_CALENDAR_API_KEY=
 ```
 
 Legacy variables can stay during testing:

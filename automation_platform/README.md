@@ -24,14 +24,14 @@ CHOPPY_ALERT_COOLDOWN_MINUTES=180
 
 The XAUUSD module uses the free Yahoo Finance chart API with symbol `GC=F` as the Version 1 gold proxy. No market data API key is required.
 
-Economic calendar support uses Finnhub when `ECONOMIC_CALENDAR_API_KEY` is configured. Without it, `/gold` and `/newyork` show `Market events unavailable` and the rest of the message still works.
+Economic calendar support uses a no-key Forex Factory/Fair Economy weekly calendar feed for USD events, plus official BEA, Census, and Federal Reserve pages where practical. No economic calendar API key is required. If all free sources are temporarily unavailable, `/gold` and `/newyork` show `Market events unavailable` and the rest of the message still works.
 
-Optional provider keys:
+Optional future provider keys are reserved but not required for Version 1:
 
 ```text
 GOLD_API_KEY=
 NEWS_API_KEY=
-ECONOMIC_CALENDAR_API_KEY=your_finnhub_api_key_optional
+ECONOMIC_CALENDAR_API_KEY=
 ```
 
 Scheduled jobs in Assistant mode:
