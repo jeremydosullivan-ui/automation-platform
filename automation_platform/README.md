@@ -22,7 +22,7 @@ VOLATILITY_ALERT_COOLDOWN_MINUTES=120
 CHOPPY_ALERT_COOLDOWN_MINUTES=180
 ```
 
-The XAUUSD module uses the free Yahoo Finance chart API with symbol `GC=F` as the Version 1 gold proxy. No market data API key is required.
+The XAUUSD module uses TradingView `OANDA:XAUUSD` for the current spot-style price. Yahoo Finance `GC=F` is used only for free candle history, adjusted onto the spot-price basis for indicators and levels. No market data API key is required.
 
 Economic calendar support uses a no-key Forex Factory/Fair Economy weekly calendar feed for USD events, plus official BEA, Census, and Federal Reserve pages where practical. No economic calendar API key is required. If all free sources are temporarily unavailable, `/gold` and `/newyork` show `Market events unavailable` and the rest of the message still works.
 

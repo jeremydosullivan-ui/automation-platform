@@ -30,6 +30,7 @@ def build_status_message() -> str:
         "🥇 XAUUSD module status\n\n"
         "✅ Module enabled\n"
         f"✅ Data source configured: {DATA_SOURCE_LABEL}\n"
+        "✅ Alerts require fresh spot data\n"
         "✅ Alerts configured with cooldowns\n\n"
         "This does not provide trading signals or financial advice."
     )
@@ -48,6 +49,11 @@ def build_gold_message(platform_config: PlatformConfig) -> str:
         "🥇 XAUUSD Market Snapshot\n\n"
         "Price:\n"
         f"{_money(data.current_price)}\n\n"
+        "Price Source:\n"
+        f"{data.source}\n"
+        f"Requested Symbol: {data.requested_symbol}\n"
+        f"Last Updated: {_time_label(data.price_timestamp)}\n"
+        f"Status: {_status_label(data)}\n\n"
         "Today:\n"
         f"{_percent(data.daily_change_percent)}\n\n"
         "Range:\n"
@@ -87,6 +93,10 @@ def build_london_message(platform_config: PlatformConfig) -> str:
     return (
         "🇬🇧 London Session Watch\n\n"
         f"XAUUSD: {_money(data.current_price)}\n\n"
+        "Price Source:\n"
+        f"{data.source}\n"
+        f"Last Updated: {_time_label(data.price_timestamp)}\n"
+        f"Status: {_status_label(data)}\n\n"
         "Trend:\n"
         f"1H: {analysis.one_hour.trend}\n"
         f"4H: {analysis.four_hour.trend}\n\n"
@@ -113,6 +123,10 @@ def build_newyork_message(platform_config: PlatformConfig) -> str:
     return (
         "🇺🇸 New York Session Watch\n\n"
         f"XAUUSD: {_money(data.current_price)}\n\n"
+        "Price Source:\n"
+        f"{data.source}\n"
+        f"Last Updated: {_time_label(data.price_timestamp)}\n"
+        f"Status: {_status_label(data)}\n\n"
         "Trend:\n"
         f"1H: {analysis.one_hour.trend}\n"
         f"4H: {analysis.four_hour.trend}\n\n"
@@ -189,3 +203,19 @@ def _number(value: float | None, digits: int) -> str:
     if value is None:
         return "unavailable"
     return f"{value:.{digits}f}"
+
+
+def _time_label(value) -> str:
+    if value is None:
+        return "unavailable"
+    return value.strftime("%Y-%m-%d %H:%M:%S UTC")
+
+
+def _status_label(data: MarketData) -> str:
+    if data.data_status == "live":
+        return "Live spot"
+    if data.data_status == "stale":
+        return "Stale - alerts disabled"
+    if data.data_status == "futures fallback":
+        return "Futures fallback - alerts disabled"
+    return "Delayed"

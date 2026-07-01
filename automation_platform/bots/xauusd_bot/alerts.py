@@ -30,6 +30,15 @@ def evaluate_alerts(data: MarketData, analysis: MarketAnalysis, settings: Xauusd
 
     logger.info("Running 15-minute scanner.")
     alerts: list[Alert] = []
+    if not data.alerts_allowed:
+        logger.warning(
+            "Skipping XAUUSD alerts because price data is not alert-safe. source=%s status=%s stale=%s spot=%s",
+            data.source,
+            data.data_status,
+            data.is_stale,
+            data.is_spot_price,
+        )
+        return alerts
 
     level_alert = _level_alert(data, analysis, settings)
     if level_alert and _cooldown_ready("level", settings.level_alert_cooldown_minutes, now):

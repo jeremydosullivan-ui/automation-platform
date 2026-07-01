@@ -63,10 +63,11 @@ It does not:
 Market data source:
 
 ```text
-Yahoo Finance chart API, symbol GC=F
+Current price: TradingView scanner, symbol OANDA:XAUUSD
+Historical candles: Yahoo Finance chart API, symbol GC=F
 ```
 
-`GC=F` is a free gold futures proxy used as the practical Version 1 fallback for XAUUSD/gold spot awareness. It does not require an API key.
+The bot uses TradingView `OANDA:XAUUSD` for the current spot-style price so it stays close to the TradingView chart. Yahoo `GC=F` is a COMEX gold futures symbol and is used only for free candle history, adjusted onto the spot-price basis for indicators and levels. No market data API key is required.
 
 News and economic calendar support:
 
@@ -279,7 +280,7 @@ VOLATILITY_ALERT_COOLDOWN_MINUTES=120
 CHOPPY_ALERT_COOLDOWN_MINUTES=180
 ```
 
-No market data API key is required for Version 1 because the module uses Yahoo Finance `GC=F`.
+No market data API key is required for Version 1. Current price uses TradingView `OANDA:XAUUSD`; candle history uses Yahoo Finance `GC=F`.
 
 Optional future keys are reserved but not required for Version 1:
 
